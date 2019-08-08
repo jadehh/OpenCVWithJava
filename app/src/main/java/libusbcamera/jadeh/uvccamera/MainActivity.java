@@ -4,10 +4,10 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.example.jade.JadeLog;
+import com.example.jade.JadeTools;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -15,7 +15,25 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadOpencv();
+        JadeTools jadeTools = new JadeTools();
+        try {
+            jadeTools.copyAssertFile(this,"images","71.jpg");
+        }catch (IOException e){
+            JadeLog.e(this,e.getMessage());
+        }
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                OpencvTest testOpencv = new OpencvTest(MainActivity.this);
+                jadeTools.deleteDirWihtFile(new File(jadeTools.ROOT_PATH+"txt"));
+                for (int i=0;i<10;i++){
+                    testOpencv.readImage(jadeTools.ROOT_PATH+"images/"+"71.jpg");
+                }
+
+            }
+        }.start();
+
     }
 
 
@@ -29,33 +47,5 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
     //Load Oencv库
-    public void loadOpencv() {
-        if (!OpenCVLoader.initDebug()) {
-            JadeLog.e(this, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
-        } else {
-            JadeLog.e(this, "OpenCV library found inside package. Using it!");
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        }
-    }
 
-
-    //Load opencv的回调函数
-    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case LoaderCallbackInterface.SUCCESS: {
-                    JadeLog.e("OpenCV", "OpenCV loaded successfully");
-
-                    JadeLog.e("OpenCV", "OpenCV loaded successfully");
-                }
-                break;
-                default: {
-                    super.onManagerConnected(status);
-                }
-                break;
-            }
-        }
-    };
 }
